@@ -126,9 +126,31 @@
         .wrong-anim { animation: shakeRed 0.5s; }
         @keyframes pulseGreen { 0% { background: #d1fae5; } 100% { background: #fff; } }
         @keyframes shakeRed { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        /* 啟動遮罩 */
+        #start-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
+
+    <!-- 啟動遮罩：確保使用者點擊後獲取焦點 -->
+    <div id="start-overlay" onclick="this.style.display='none'">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl text-center transform hover:scale-105 transition cursor-pointer border-4 border-pink-400">
+            <div class="text-6xl mb-4">⌨️</div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">準備好了嗎？</h2>
+            <p class="text-pink-500 font-bold mb-4">點擊任何地方開始認識鍵盤！</p>
+            <div class="bg-pink-100 text-pink-700 px-4 py-2 rounded-full text-sm font-bold inline-block">點擊一下進入教室</div>
+        </div>
+    </div>
 
     <header class="bg-white/90 backdrop-blur-sm shadow-sm z-10 px-6 py-3 flex justify-between items-center shrink-0 border-b-4 border-pink-200">
         <div class="flex items-center gap-3">
@@ -310,6 +332,7 @@
                     <div id="NumpadDivide" class="key key-func w-full h-10">/</div>
                     <div id="NumpadMultiply" class="key key-func w-full h-10">*</div>
                     <div id="NumpadSubtract" class="key key-func w-full h-10">-</div>
+                    
                     <div id="Numpad7" class="key key-std w-full h-10"><span class="k-shift">Home</span><span class="k-main">7</span></div>
                     <div id="Numpad8" class="key key-std w-full h-10"><span class="k-shift">↑</span><span class="k-main">8</span></div>
                     <div id="Numpad9" class="key key-std w-full h-10"><span class="k-shift">PgUp</span><span class="k-main">9</span></div>
@@ -386,6 +409,7 @@
                 <div id="q-feedback" class="h-10 text-center text-lg font-bold flex items-center justify-center rounded-lg transition-all"></div>
                 <div class="mt-auto text-center pt-4 border-t border-gray-100"><p class="text-xs text-gray-400">若視窗擋住按鍵，可以按住最上方標題拖移喔！</p></div>
             </div>
+            
             <div id="panel-result" class="hidden text-center py-6">
                 <div class="text-7xl mb-4 animate-bounce">🏆</div>
                 <h2 class="text-3xl font-bold text-gray-800 mb-2">太棒了！挑戰完成</h2>
@@ -397,6 +421,9 @@
     </div>
 
     <script>
+        // 設定初始模式
+        let currentMode = 'practice';
+        
         // 【百科全書模式】包含所有系統按鍵的詳細介紹
         const keyData = {
             'F1': { name: 'F1 說明鍵', desc: '【幫助 Help】在大部分的程式裡，按下 F1 會跳出「使用說明」或「幫助」視窗。', combos: [] },
@@ -430,7 +457,7 @@
             'Digit2': { name: '2 / ㄉ / @', desc: '打數字 2。按住 Shift 變小老鼠 (@)。注音是「ㄉ」。', combos: [] }
         };
 
-        // 【智慧隨機題庫】共 50 題，分為 5 類
+        // 【智慧隨機題庫】
         const bankBuckets = {
             editing: [
                 { t: "打錯字了！我要用哪個「橡皮擦」把左邊的字擦掉？", k: ['Backspace'] },
@@ -471,7 +498,7 @@
             numpad: [
                 { t: "請開啟「數字鍵盤」的小燈泡 (Num Lock)！", k: ['NumLock'] },
                 { t: "請按右邊數字鍵盤上的「Enter」鍵！", k: ['NumpadEnter'] },
-                { t: "用右邊的數字區輸入數字「5」！(上面有小凸點喔)", k: ['Numpad5'] },
+                { t: "用右邊的數字區輸入數字「5」！", k: ['Numpad5'] },
                 { t: "數學課要打「加號 +」，請按數字區的哪個鍵？", k: ['NumpadAdd'] },
                 { t: "數學課要打「減號 -」，請按數字區的哪個鍵？", k: ['NumpadSubtract'] },
                 { t: "想要打數學的「乘號 *」，請按數字區的哪個鍵？", k: ['NumpadMultiply'] },
@@ -494,14 +521,17 @@
             ]
         };
 
-        let quizQuestions = [], quizState = { idx: 0, score: 0, lives: 3 }, pressedKeys = new Set(), keyboardScale = 1, currentMode = 'practice';
+        let quizQuestions = [], quizState = { idx: 0, score: 0, lives: 3 }, pressedKeys = new Set(), keyboardScale = 1;
         const floatWin = document.getElementById('floating-window'), dragHandle = document.getElementById('drag-handle');
         let isDragging = false, startX, startY, hasMoved = false;
 
         dragHandle.addEventListener('mousedown', (e) => {
             if(e.target.tagName === 'BUTTON') return;
             isDragging = true; const rect = floatWin.getBoundingClientRect();
-            if (!hasMoved) { floatWin.style.left = rect.left + 'px'; floatWin.style.top = rect.top + 'px'; floatWin.style.right = 'auto'; floatWin.style.bottom = 'auto'; hasMoved = true; }
+            if (!hasMoved) {
+                floatWin.style.left = rect.left + 'px'; floatWin.style.top = rect.top + 'px';
+                floatWin.style.right = 'auto'; floatWin.style.bottom = 'auto'; hasMoved = true;
+            }
             startX = e.clientX - floatWin.offsetLeft; startY = e.clientY - floatWin.offsetTop;
         });
         document.addEventListener('mousemove', (e) => { if (!isDragging) return; let newX = e.clientX - startX, newY = e.clientY - startY; floatWin.style.left = `${newX}px`; floatWin.style.top = `${newY}px`; });
