@@ -208,7 +208,6 @@
                     <div id="F12" class="key key-func w-10 h-10">F12</div>
                 </div>
 
-                <!-- Row 2: Digits -->
                 <div class="flex gap-1.5">
                     <div id="Backquote" class="key key-std w-10 h-10"><span class="k-shift">~</span><span class="k-main">`</span><span class="k-zh">巷</span></div>
                     <div id="Digit1" class="key key-std w-10 h-10"><span class="k-shift">!</span><span class="k-main">1</span><span class="k-zh">ㄅ</span></div>
@@ -226,7 +225,6 @@
                     <div id="Backspace" class="key key-func w-20 h-10 text-sm">Backspace</div>
                 </div>
 
-                <!-- Row 3: QWERTY -->
                 <div class="flex gap-1.5">
                     <div id="Tab" class="key key-func w-14 h-10 text-sm">Tab</div>
                     <div id="KeyQ" class="key key-std w-10 h-10"><span class="k-main">Q</span><span class="k-zh">ㄆ</span></div>
@@ -244,7 +242,6 @@
                     <div id="Backslash" class="key key-std w-14 h-10"><span class="k-shift">|</span><span class="k-main">\</span><span class="k-zh">鎮</span></div>
                 </div>
 
-                <!-- Row 4: ASDF -->
                 <div class="flex gap-1.5">
                     <div id="CapsLock" class="key key-func w-16 h-10 text-sm">Caps</div>
                     <div id="KeyA" class="key key-std w-10 h-10"><span class="k-main">A</span><span class="k-zh">ㄇ</span></div>
@@ -261,7 +258,6 @@
                     <div id="Enter" class="key key-func flex-grow h-10 text-sm bg-blue-100 text-blue-900">Enter</div>
                 </div>
 
-                <!-- Row 5: ZXCV -->
                 <div class="flex gap-1.5">
                     <div id="ShiftLeft" class="key key-func w-24 h-10 text-sm">Shift</div>
                     <div id="KeyZ" class="key key-std w-10 h-10"><span class="k-main">Z</span><span class="k-zh">ㄈ</span></div>
@@ -277,7 +273,6 @@
                     <div id="ShiftRight" class="key key-func flex-grow h-10 text-sm">Shift</div>
                 </div>
 
-                <!-- Row 6: Control Keys -->
                 <div class="flex gap-1.5">
                     <div id="ControlLeft" class="key key-func w-12 h-10 text-sm">Ctrl</div>
                     <div id="MetaLeft" class="key key-func w-12 h-10 text-sm">Win</div>
@@ -290,7 +285,6 @@
                 </div>
             </div>
 
-            <!-- 2. 功能鍵與方向鍵區 -->
             <div class="section-nav">
                 <div class="flex gap-1.5 mb-2">
                     <div id="PrintScreen" class="key key-func w-10 h-10 text-xs">PrtSc</div>
@@ -319,7 +313,6 @@
                 </div>
             </div>
 
-            <!-- 3. 數字鍵盤區 -->
             <div class="flex flex-col gap-6">
                 <div class="flex justify-between px-2 bg-gray-800 py-2 rounded border border-gray-600">
                     <div><div id="led-num" class="status-light"></div><div class="status-text">Num</div></div>
@@ -423,8 +416,9 @@
     <script>
         // 設定初始模式
         let currentMode = 'practice';
-        
-        // 【百科全書模式】包含所有系統按鍵的詳細介紹
+        let isNumLockOn = true; // 追蹤數字鎖狀態
+
+        // 【百科全書模式】
         const keyData = {
             'F1': { name: 'F1 說明鍵', desc: '【幫助 Help】在大部分的程式裡，按下 F1 會跳出「使用說明」或「幫助」視窗。', combos: [] },
             'F2': { name: 'F2 重新命名', desc: '【重新命名 Rename】選取檔案後按 F2，可以直接更改檔案名字。', combos: [] },
@@ -447,14 +441,43 @@
             'ShiftLeft': { name: 'Shift 上檔鍵 (左)', desc: '【變身鍵】按住打英文變大寫，按住打數字變符號。按一下可切換中英文。', combos: ['Shift+Space: 切換全形 / 半形'] },
             'ShiftRight': { name: 'Shift 上檔鍵 (右)', desc: '功能和左邊 Shift 相同。', combos: ['Shift+Space: 切換全形 / 半形'] },
             'ControlLeft': { name: 'Ctrl 控制鍵 (左)', desc: '組合技的核心。', combos: ['Ctrl+C: 複製', 'Ctrl+V: 貼上', 'Ctrl+S: 存檔', 'Ctrl+Z: 復原', 'Ctrl+A: 全選', 'Ctrl+Space: 開關輸入法'] },
+            'ControlRight': { name: 'Ctrl 控制鍵 (右)', desc: '功能和左邊的 Ctrl 一樣。', combos: [] },
             'MetaLeft': { name: 'Windows 開始鍵', desc: '打開系統「開始選單」。為了不干擾網頁操作，考試不考這個鍵。', combos: ['Win+Space: 切換語言', 'Win+D: 顯示桌面'] },
+            'MetaRight': { name: 'Windows 開始鍵', desc: '功能和左邊的 Windows 鍵一樣。', combos: [] },
+            'AltLeft': { name: 'Alt 變換鍵 (左)', desc: '【Alternate】變換鍵。用來改變其他按鍵的功能。', combos: ['Alt+F4: 關閉視窗', 'Alt+Tab: 切換視窗'] },
+            'AltRight': { name: 'Alt 變換鍵 (右)', desc: '功能和左邊的 Alt 一樣。', combos: [] },
             'Space': { name: 'Space 空白鍵', desc: '鍵盤上最長的鍵。打出空白，也是切換全形半形的好幫手。', combos: ['Shift+Space: 切換胖胖的全形字', 'Ctrl+Space: 開關輸入法'] },
+            'ContextMenu': { name: 'Menu 選單鍵', desc: '按下這個鍵，就等於你用滑鼠點了「右鍵」，會跳出選項選單。', combos: [] },
             'Enter': { name: 'Enter 確認/換行', desc: '送出訊息或換到下一行。', combos: [] },
             'Backspace': { name: 'Backspace 橡皮擦', desc: '刪除游標「左邊」(前面) 的文字。', combos: [] },
             'Escape': { name: 'Esc 逃跑鍵', desc: '取消動作、關閉彈出窗或退出全螢幕遊戲。', combos: [] },
-            'NumLock': { name: 'Num Lock 數字鎖', desc: '控制右邊數字鍵盤。燈亮打數字，燈滅變成方向鍵。', extra: '觀察右上角第一個燈號' },
+            'NumLock': { name: 'Num Lock 數字鎖', desc: '控制右邊數字鍵盤。燈亮打數字，燈滅變成方向鍵、Home、End 功能喔！', extra: '觀察右上角第一個燈號' },
             'Digit1': { name: '1 / ㄅ / !', desc: '打數字 1。按住 Shift 變驚嘆號 (!)。注音是「ㄅ」。', combos: [] },
-            'Digit2': { name: '2 / ㄉ / @', desc: '打數字 2。按住 Shift 變小老鼠 (@)。注音是「ㄉ」。', combos: [] }
+            'Digit2': { name: '2 / ㄉ / @', desc: '打數字 2。按住 Shift 變小老鼠 (@)。注音是「ㄉ」。', combos: [] },
+
+            // 方向鍵
+            'ArrowUp': { name: '上箭頭', desc: '將游標往上移動，或是網頁向上捲動。', combos: [] },
+            'ArrowDown': { name: '下箭頭', desc: '將游標往下移動，或是網頁向下捲動。', combos: [] },
+            'ArrowLeft': { name: '左箭頭', desc: '將游標往左邊移動。', combos: [] },
+            'ArrowRight': { name: '右箭頭', desc: '將游標往右邊移動。', combos: [] },
+
+            // 數字鍵盤專用 (第二功能)
+            'Numpad7': { name: '數字 7', nameAlt: 'Home 鍵', desc: '輸入數字 7。', descAlt: '瞬間跳到這一行最前面。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
+            'Numpad8': { name: '數字 8', nameAlt: '上箭頭', desc: '輸入數字 8。', descAlt: '將游標向上移動。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
+            'Numpad9': { name: '數字 9', nameAlt: 'Page Up', desc: '輸入數字 9。', descAlt: '畫面往上翻一頁。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
+            'Numpad4': { name: '數字 4', nameAlt: '左箭頭', desc: '輸入數字 4。', descAlt: '將游標向左移動。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
+            'Numpad5': { name: '數字 5', desc: '輸入數字 5。這個鍵上面有個「小凸點」，方便找位置。', combos: [] },
+            'Numpad6': { name: '數字 6', nameAlt: '右箭頭', desc: '輸入數字 6。', descAlt: '將游標向右移動。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
+            'Numpad1': { name: '數字 1', nameAlt: 'End 鍵', desc: '輸入數字 1。', descAlt: '瞬間跳到這一行最後面。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
+            'Numpad2': { name: '數字 2', nameAlt: '下箭頭', desc: '輸入數字 2。', descAlt: '將游標向下移動。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
+            'Numpad3': { name: '數字 3', nameAlt: 'Page Down', desc: '輸入數字 3。', descAlt: '畫面往下翻一頁。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
+            'Numpad0': { name: '數字 0', nameAlt: 'Insert 鍵', desc: '輸入數字 0。', descAlt: '切換「插入」或「取代」打字模式。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
+            'NumpadDecimal': { name: '小數點 .', nameAlt: 'Delete 鍵', desc: '打出小數點。', descAlt: '刪除游標「右邊」(後面) 的字。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
+            'NumpadEnter': { name: 'Enter (數字區)', desc: '功能和中間的 Enter 一樣，方便右手快速確認。', combos: [] },
+            'NumpadAdd': { name: '加號 +', desc: '數學運算的加法符號。', combos: [] },
+            'NumpadSubtract': { name: '減號 -', desc: '數學運算的減法符號。', combos: [] },
+            'NumpadMultiply': { name: '乘號 *', desc: '數學運算的乘法符號。', combos: [] },
+            'NumpadDivide': { name: '除號 /', desc: '數學運算的除法符號。', combos: [] }
         };
 
         // 【智慧隨機題庫】
@@ -498,7 +521,7 @@
             numpad: [
                 { t: "請開啟「數字鍵盤」的小燈泡 (Num Lock)！", k: ['NumLock'] },
                 { t: "請按右邊數字鍵盤上的「Enter」鍵！", k: ['NumpadEnter'] },
-                { t: "用右邊的數字區輸入數字「5」！", k: ['Numpad5'] },
+                { t: "用右邊的數字區輸入數字「5」！(上面有小凸點喔)", k: ['Numpad5'] },
                 { t: "數學課要打「加號 +」，請按數字區的哪個鍵？", k: ['NumpadAdd'] },
                 { t: "數學課要打「減號 -」，請按數字區的哪個鍵？", k: ['NumpadSubtract'] },
                 { t: "想要打數學的「乘號 *」，請按數字區的哪個鍵？", k: ['NumpadMultiply'] },
@@ -552,7 +575,14 @@
             updateLocks(e);
         });
 
-        function updateLocks(e) { ['NumLock', 'CapsLock', 'ScrollLock'].forEach(lock => { const el = document.getElementById('led-' + lock.toLowerCase().replace('lock','')); if (el) e.getModifierState(lock) ? el.classList.add('on') : el.classList.remove('on'); }); }
+        function updateLocks(e) { 
+            if (!e) return;
+            isNumLockOn = e.getModifierState("NumLock");
+            ['NumLock', 'CapsLock', 'ScrollLock'].forEach(lock => { 
+                const el = document.getElementById('led-' + lock.toLowerCase().replace('lock','')); 
+                if (el) e.getModifierState(lock) ? el.classList.add('on') : el.classList.remove('on'); 
+            }); 
+        }
 
         function setMode(mode) {
             currentMode = mode; document.getElementById('panel-practice').style.display = mode === 'practice' ? 'block' : 'none';
@@ -565,15 +595,35 @@
         function showKeyInfo(code, char) {
             document.getElementById('info-placeholder').classList.add('hidden'); document.getElementById('info-content').classList.remove('hidden');
             const k = keyData[code], domEl = document.getElementById(code);
+            
+            // 處理視覺顯示
             if (domEl) {
                 const kMain = domEl.querySelector('.k-main'), kZh = domEl.querySelector('.k-zh'), kShift = domEl.querySelector('.k-shift');
                 document.getElementById('info-key-main').innerText = kMain ? kMain.innerText : (char.length===1?char.toUpperCase():'⌨');
                 document.getElementById('info-key-zh').innerText = kZh ? kZh.innerText : ''; document.getElementById('info-key-shift').innerText = kShift ? kShift.innerText : '';
             }
-            document.getElementById('info-key-name').innerText = k ? k.name.split(' ')[0] : (char.length===1?char.toUpperCase():code);
-            document.getElementById('info-code').innerText = code; document.getElementById('info-desc').innerText = k ? k.desc : "標準輸入按鍵。";
-            const extra = document.getElementById('info-extra-box'); if (k && k.extra) { extra.classList.remove('hidden'); document.getElementById('info-extra').innerText = k.extra; } else extra.classList.add('hidden');
-            document.getElementById('info-combos').innerHTML = k && k.combos.length ? k.combos.map(c => `<li>🔹 ${c}</li>`).join('') : "<li>這裡沒有組合技喔</li>";
+
+            // 處理文字說明 (數字鍵盤智慧切換)
+            let displayName = k ? k.name : (char.length===1?char.toUpperCase():code);
+            let displayDesc = k ? k.desc : "標準輸入按鍵。";
+            
+            // 如果 Num Lock 關閉且按的是有備用功能的數字鍵
+            if (k && !isNumLockOn && k.nameAlt) {
+                displayName = k.nameAlt + " (原 " + k.name + ")";
+                displayDesc = "【目前功能：" + k.nameAlt + "】" + k.descAlt;
+            }
+
+            document.getElementById('info-key-name').innerText = displayName.split(' ')[0];
+            document.getElementById('info-code').innerText = code;
+            document.getElementById('info-desc').innerText = displayDesc;
+            
+            const extra = document.getElementById('info-extra-box'); 
+            if (k && (k.extra || (k.nameAlt && !isNumLockOn))) { 
+                extra.classList.remove('hidden'); 
+                document.getElementById('info-extra').innerText = k.extra || "目前數字功能已關閉，變成功能鍵囉！"; 
+            } else extra.classList.add('hidden');
+            
+            document.getElementById('info-combos').innerHTML = k && k.combos && k.combos.length ? k.combos.map(c => `<li>🔹 ${c}</li>`).join('') : "<li>這裡沒有組合技喔</li>";
         }
 
         function shuffle(arr) { return arr.sort(() => 0.5 - Math.random()); }
