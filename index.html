@@ -127,7 +127,6 @@
         @keyframes pulseGreen { 0% { background: #d1fae5; } 100% { background: #fff; } }
         @keyframes shakeRed { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-        /* 啟動遮罩 */
         #start-overlay {
             position: fixed;
             inset: 0;
@@ -142,7 +141,7 @@
 </head>
 <body>
 
-    <!-- 啟動遮罩：確保使用者點擊後獲取焦點 -->
+    <!-- 啟動遮罩 -->
     <div id="start-overlay" onclick="this.style.display='none'">
         <div class="bg-white p-8 rounded-3xl shadow-2xl text-center transform hover:scale-105 transition cursor-pointer border-4 border-pink-400">
             <div class="text-6xl mb-4">⌨️</div>
@@ -188,7 +187,6 @@
     <main class="keyboard-container" id="main-area">
         <div class="keyboard-case" id="keyboard-case">
              <div class="section-main">
-                <!-- Row 1: F Keys -->
                 <div class="flex gap-2 mb-2">
                     <div id="Escape" class="key key-func w-10 h-10 bg-red-100 text-red-800">Esc</div>
                     <div class="w-4"></div>
@@ -291,7 +289,6 @@
                     <div id="ScrollLock" class="key key-func w-10 h-10 text-xs">ScrLk</div>
                     <div id="Pause" class="key key-func w-10 h-10 text-xs">Pause</div>
                 </div>
-                
                 <div class="grid grid-cols-3 gap-1.5">
                     <div id="Insert" class="key key-func w-10 h-10 text-xs">Ins</div>
                     <div id="Home" class="key key-func w-10 h-10 text-xs">Home</div>
@@ -300,9 +297,7 @@
                     <div id="End" class="key key-func w-10 h-10 text-xs">End</div>
                     <div id="PageDown" class="key key-func w-10 h-10 text-xs">PgDn</div>
                 </div>
-
                 <div class="flex-grow"></div>
-
                 <div class="grid grid-cols-3 gap-1.5">
                     <div></div>
                     <div id="ArrowUp" class="key key-func w-10 h-10 text-xl">↑</div>
@@ -386,6 +381,7 @@
                     </div>
                 </div>
             </div>
+            
             <div id="panel-quiz" class="hidden flex-col h-full">
                 <div class="flex justify-between items-center mb-5">
                     <span class="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-sm font-bold shadow-sm">第 <span id="q-idx">1</span>/20 題</span>
@@ -394,11 +390,16 @@
                         <span id="q-lives" class="text-lg tracking-widest">❤️❤️❤️</span>
                     </div>
                 </div>
-                <div class="bg-indigo-50 rounded-2xl p-6 border-2 border-indigo-100 mb-6 text-center shadow-sm relative overflow-hidden">
+                <div class="bg-indigo-50 rounded-2xl p-6 border-2 border-indigo-100 mb-4 text-center shadow-sm relative overflow-hidden">
                     <div class="absolute -right-4 -top-4 text-indigo-100 text-6xl transform rotate-12">?</div>
                     <p class="text-xs text-indigo-400 mb-2 font-bold uppercase tracking-widest">任務說明</p>
                     <h3 id="q-text" class="text-xl font-bold text-indigo-900 leading-relaxed">...</h3>
                 </div>
+                
+                <button onclick="skipQuestion()" class="w-full mb-4 py-2 bg-gray-100 text-gray-500 rounded-xl text-sm font-bold hover:bg-gray-200 transition flex items-center justify-center gap-1">
+                    <span>⏩</span> 我不曉得，先跳過
+                </button>
+
                 <div id="q-feedback" class="h-10 text-center text-lg font-bold flex items-center justify-center rounded-lg transition-all"></div>
                 <div class="mt-auto text-center pt-4 border-t border-gray-100"><p class="text-xs text-gray-400">若視窗擋住按鍵，可以按住最上方標題拖移喔！</p></div>
             </div>
@@ -414,11 +415,9 @@
     </div>
 
     <script>
-        // 設定初始模式
         let currentMode = 'practice';
-        let isNumLockOn = true; // 追蹤數字鎖狀態
+        let isNumLockOn = true; 
 
-        // 【百科全書模式】
         const keyData = {
             'F1': { name: 'F1 說明鍵', desc: '【幫助 Help】在大部分的程式裡，按下 F1 會跳出「使用說明」或「幫助」視窗。', combos: [] },
             'F2': { name: 'F2 重新命名', desc: '【重新命名 Rename】選取檔案後按 F2，可以直接更改檔案名字。', combos: [] },
@@ -442,26 +441,20 @@
             'ShiftRight': { name: 'Shift 上檔鍵 (右)', desc: '功能和左邊 Shift 相同。', combos: ['Shift+Space: 切換全形 / 半形'] },
             'ControlLeft': { name: 'Ctrl 控制鍵 (左)', desc: '組合技的核心。', combos: ['Ctrl+C: 複製', 'Ctrl+V: 貼上', 'Ctrl+S: 存檔', 'Ctrl+Z: 復原', 'Ctrl+A: 全選', 'Ctrl+Space: 開關輸入法'] },
             'ControlRight': { name: 'Ctrl 控制鍵 (右)', desc: '功能和左邊的 Ctrl 一樣。', combos: [] },
+            'AltLeft': { name: 'Alt 變換鍵 (左)', desc: '【變身鍵】按住打英文變大寫，按住打數字變符號。', combos: ['Alt+Tab: 切換視窗'] },
+            'AltRight': { name: 'Alt 變換鍵 (右)', desc: '功能和左邊 Alt 相同。', combos: [] },
             'MetaLeft': { name: 'Windows 開始鍵', desc: '打開系統「開始選單」。為了不干擾網頁操作，考試不考這個鍵。', combos: ['Win+Space: 切換語言', 'Win+D: 顯示桌面'] },
-            'MetaRight': { name: 'Windows 開始鍵', desc: '功能和左邊的 Windows 鍵一樣。', combos: [] },
-            'AltLeft': { name: 'Alt 變換鍵 (左)', desc: '【Alternate】變換鍵。用來改變其他按鍵的功能。', combos: ['Alt+F4: 關閉視窗', 'Alt+Tab: 切換視窗'] },
-            'AltRight': { name: 'Alt 變換鍵 (右)', desc: '功能和左邊的 Alt 一樣。', combos: [] },
             'Space': { name: 'Space 空白鍵', desc: '鍵盤上最長的鍵。打出空白，也是切換全形半形的好幫手。', combos: ['Shift+Space: 切換胖胖的全形字', 'Ctrl+Space: 開關輸入法'] },
-            'ContextMenu': { name: 'Menu 選單鍵', desc: '按下這個鍵，就等於你用滑鼠點了「右鍵」，會跳出選項選單。', combos: [] },
             'Enter': { name: 'Enter 確認/換行', desc: '送出訊息或換到下一行。', combos: [] },
             'Backspace': { name: 'Backspace 橡皮擦', desc: '刪除游標「左邊」(前面) 的文字。', combos: [] },
             'Escape': { name: 'Esc 逃跑鍵', desc: '取消動作、關閉彈出窗或退出全螢幕遊戲。', combos: [] },
             'NumLock': { name: 'Num Lock 數字鎖', desc: '控制右邊數字鍵盤。燈亮打數字，燈滅變成方向鍵、Home、End 功能喔！', extra: '觀察右上角第一個燈號' },
             'Digit1': { name: '1 / ㄅ / !', desc: '打數字 1。按住 Shift 變驚嘆號 (!)。注音是「ㄅ」。', combos: [] },
             'Digit2': { name: '2 / ㄉ / @', desc: '打數字 2。按住 Shift 變小老鼠 (@)。注音是「ㄉ」。', combos: [] },
-
-            // 方向鍵
             'ArrowUp': { name: '上箭頭', desc: '將游標往上移動，或是網頁向上捲動。', combos: [] },
             'ArrowDown': { name: '下箭頭', desc: '將游標往下移動，或是網頁向下捲動。', combos: [] },
             'ArrowLeft': { name: '左箭頭', desc: '將游標往左邊移動。', combos: [] },
             'ArrowRight': { name: '右箭頭', desc: '將游標往右邊移動。', combos: [] },
-
-            // 數字鍵盤專用 (第二功能)
             'Numpad7': { name: '數字 7', nameAlt: 'Home 鍵', desc: '輸入數字 7。', descAlt: '瞬間跳到這一行最前面。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
             'Numpad8': { name: '數字 8', nameAlt: '上箭頭', desc: '輸入數字 8。', descAlt: '將游標向上移動。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
             'Numpad9': { name: '數字 9', nameAlt: 'Page Up', desc: '輸入數字 9。', descAlt: '畫面往上翻一頁。', extra: '這是在 Num Lock 燈「滅掉」時的功能喔！' },
@@ -480,7 +473,6 @@
             'NumpadDivide': { name: '除號 /', desc: '數學運算的除法符號。', combos: [] }
         };
 
-        // 【智慧隨機題庫】
         const bankBuckets = {
             editing: [
                 { t: "打錯字了！我要用哪個「橡皮擦」把左邊的字擦掉？", k: ['Backspace'] },
@@ -595,34 +587,24 @@
         function showKeyInfo(code, char) {
             document.getElementById('info-placeholder').classList.add('hidden'); document.getElementById('info-content').classList.remove('hidden');
             const k = keyData[code], domEl = document.getElementById(code);
-            
-            // 處理視覺顯示
             if (domEl) {
                 const kMain = domEl.querySelector('.k-main'), kZh = domEl.querySelector('.k-zh'), kShift = domEl.querySelector('.k-shift');
                 document.getElementById('info-key-main').innerText = kMain ? kMain.innerText : (char.length===1?char.toUpperCase():'⌨');
                 document.getElementById('info-key-zh').innerText = kZh ? kZh.innerText : ''; document.getElementById('info-key-shift').innerText = kShift ? kShift.innerText : '';
             }
-
-            // 處理文字說明 (數字鍵盤智慧切換)
             let displayName = k ? k.name : (char.length===1?char.toUpperCase():code);
             let displayDesc = k ? k.desc : "標準輸入按鍵。";
-            
-            // 如果 Num Lock 關閉且按的是有備用功能的數字鍵
             if (k && !isNumLockOn && k.nameAlt) {
                 displayName = k.nameAlt + " (原 " + k.name + ")";
                 displayDesc = "【目前功能：" + k.nameAlt + "】" + k.descAlt;
             }
-
             document.getElementById('info-key-name').innerText = displayName.split(' ')[0];
             document.getElementById('info-code').innerText = code;
             document.getElementById('info-desc').innerText = displayDesc;
-            
             const extra = document.getElementById('info-extra-box'); 
             if (k && (k.extra || (k.nameAlt && !isNumLockOn))) { 
-                extra.classList.remove('hidden'); 
-                document.getElementById('info-extra').innerText = k.extra || "目前數字功能已關閉，變成功能鍵囉！"; 
+                extra.classList.remove('hidden'); document.getElementById('info-extra').innerText = k.extra || "目前數字功能已關閉，變成功能鍵囉！"; 
             } else extra.classList.add('hidden');
-            
             document.getElementById('info-combos').innerHTML = k && k.combos && k.combos.length ? k.combos.map(c => `<li>🔹 ${c}</li>`).join('') : "<li>這裡沒有組合技喔</li>";
         }
 
@@ -635,20 +617,30 @@
             if (quizState.idx >= quizQuestions.length) { showResult(); return; }
             const q = quizQuestions[quizState.idx]; document.getElementById('q-idx').innerText = quizState.idx + 1; document.getElementById('q-score').innerText = quizState.score;
             document.getElementById('q-lives').innerText = '❤️'.repeat(quizState.lives); document.getElementById('q-text').innerText = `Q${quizState.idx + 1}. ${q.t}`;
-            document.getElementById('q-feedback').innerText = ''; document.getElementById('q-feedback').className = "";
+            document.getElementById('q-feedback').innerText = ''; document.getElementById('q-feedback').className = "h-10 text-center text-lg font-bold flex items-center justify-center rounded-lg transition-all";
         }
+        
+        function skipQuestion() {
+            document.getElementById('q-feedback').innerText = "⏩ 跳過這題，加油！";
+            document.getElementById('q-feedback').className = "h-10 text-center text-lg font-bold text-gray-500 bg-gray-50 flex items-center justify-center rounded-lg";
+            setTimeout(() => { quizState.idx++; renderQuiz(); }, 1000);
+        }
+
         function checkQuiz(e) {
             const q = quizQuestions[quizState.idx]; let isCorrect = false;
+            // 修正判斷邏輯，讓左右按鍵通用
             if (q.k.length > 1) {
                 isCorrect = q.k.every(req => {
                     if (req === 'Control') return pressedKeys.has('ControlLeft') || pressedKeys.has('ControlRight');
                     if (req === 'Shift') return pressedKeys.has('ShiftLeft') || pressedKeys.has('ShiftRight');
+                    if (req === 'Alt') return pressedKeys.has('AltLeft') || pressedKeys.has('AltRight');
                     return pressedKeys.has(req);
                 });
             } else {
                 const t = q.k[0];
                 if (t === 'Control') isCorrect = ['ControlLeft','ControlRight'].includes(e.code);
                 else if (t === 'Shift') isCorrect = ['ShiftLeft','ShiftRight'].includes(e.code);
+                else if (t === 'Alt') isCorrect = ['AltLeft','AltRight'].includes(e.code);
                 else isCorrect = e.code === t;
             }
             if (isCorrect) { quizState.score += 5; document.getElementById('q-feedback').innerText = "⭕ 答對了！好棒！"; document.getElementById('q-feedback').className = "h-10 text-center text-lg font-bold text-green-600 bg-green-50 flex items-center justify-center rounded-lg"; setTimeout(() => { quizState.idx++; renderQuiz(); }, 1000); }
@@ -665,11 +657,9 @@
         document.querySelectorAll('.key').forEach(el => {
             el.addEventListener('mousedown', () => { 
                 if (currentMode === 'practice') {
-                    showKeyInfo(el.id, el.innerText);
-                    document.getElementById(el.id).classList.add('active');
+                    showKeyInfo(el.id, el.innerText); document.getElementById(el.id).classList.add('active');
                 } else {
-                    checkQuiz({ code: el.id });
-                    document.getElementById(el.id).classList.add('active');
+                    checkQuiz({ code: el.id }); document.getElementById(el.id).classList.add('active');
                 }
             });
             el.addEventListener('mouseup', () => { document.getElementById(el.id).classList.remove('active'); });
