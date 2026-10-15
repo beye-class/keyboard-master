@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>崇德國小：快樂鍵盤大師2.0</title>
+    <title>崇德國小：快樂鍵盤大師</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto+Mono:wght@500&display=swap');
@@ -15,7 +15,8 @@
             background-size: 24px 24px;
             user-select: none;
             overflow: hidden;
-            height: 100vh;
+            min-height: 100vh;
+            height: 100dvh;
             display: flex;
             flex-direction: column;
         }
@@ -136,6 +137,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        @media (max-width: 900px) {
+            body { overflow: auto; min-height: 100dvh; height: auto; }
+            header { flex-wrap: wrap; gap: 0.75rem; }
+            header > div:last-child { flex-wrap: wrap; }
+            .keyboard-container { justify-content: flex-start; min-height: 620px; }
+            .keyboard-case { transform-origin: left center; }
+            #floating-window { position: fixed; left: 12px; right: 12px; bottom: 12px; width: auto; max-height: 52vh; }
+            .copyright-footer { display: none; }
         }
     </style>
 </head>
@@ -437,14 +447,14 @@
             'PageDown': { name: 'PgDn 下一頁', desc: '將畫面往下翻一整頁。', combos: [] },
             'Tab': { name: 'Tab 跳格鍵', desc: '在填表單時跳到下一個格子，或讓文字縮排。', combos: ['Alt+Tab: 快速切換到別的視窗'] },
             'CapsLock': { name: 'Caps Lock 大寫鎖', desc: '【大寫鎖定】燈亮時，打出來的英文字母全都是大寫。', extra: '輸入密碼時一定要注意這個燈有沒有亮！' },
-            'ShiftLeft': { name: 'Shift 上檔鍵 (左)', desc: '【變身鍵】按住打英文變大寫，按住打數字變符號。按一下可切換中英文。', combos: ['Shift+Space: 切換全形 / 半形'] },
+            'ShiftLeft': { name: 'Shift 上檔鍵 (左)', desc: '【變身鍵】按住打英文可輸入大寫，按住數字鍵可輸入上方符號。切換中英文的方式依輸入法設定而不同。', combos: ['Shift+Space：部分輸入法可切換全形 / 半形'] },
             'ShiftRight': { name: 'Shift 上檔鍵 (右)', desc: '功能和左邊 Shift 相同。', combos: ['Shift+Space: 切換全形 / 半形'] },
-            'ControlLeft': { name: 'Ctrl 控制鍵 (左)', desc: '組合技的核心。', combos: ['Ctrl+C: 複製', 'Ctrl+V: 貼上', 'Ctrl+S: 存檔', 'Ctrl+Z: 復原', 'Ctrl+A: 全選', 'Ctrl+Space: 開關輸入法'] },
+            'ControlLeft': { name: 'Ctrl 控制鍵 (左)', desc: '常和其他按鍵組合使用；實際功能可能依程式或輸入法設定而不同。', combos: ['Ctrl+C：複製', 'Ctrl+V：貼上', 'Ctrl+S：存檔', 'Ctrl+Z：復原', 'Ctrl+A：全選', 'Ctrl+Space：部分輸入法可切換輸入狀態'] },
             'ControlRight': { name: 'Ctrl 控制鍵 (右)', desc: '功能和左邊的 Ctrl 一樣。', combos: [] },
-            'AltLeft': { name: 'Alt 變換鍵 (左)', desc: '【變身鍵】按住打英文變大寫，按住打數字變符號。', combos: ['Alt+Tab: 切換視窗'] },
+            'AltLeft': { name: 'Alt 變換鍵 (左)', desc: '【變身鍵】用來改變其他按鍵的功能。', combos: ['Alt+Tab: 切換視窗'] },
             'AltRight': { name: 'Alt 變換鍵 (右)', desc: '功能和左邊 Alt 相同。', combos: [] },
             'MetaLeft': { name: 'Windows 開始鍵', desc: '打開系統「開始選單」。為了不干擾網頁操作，考試不考這個鍵。', combos: ['Win+Space: 切換語言', 'Win+D: 顯示桌面'] },
-            'Space': { name: 'Space 空白鍵', desc: '鍵盤上最長的鍵。打出空白，也是切換全形半形的好幫手。', combos: ['Shift+Space: 切換胖胖的全形字', 'Ctrl+Space: 開關輸入法'] },
+            'Space': { name: 'Space 空白鍵', desc: '鍵盤上最長的鍵，用來輸入空白。組合鍵功能會依輸入法設定而不同。', combos: ['Shift+Space：部分輸入法可切換全形 / 半形', 'Ctrl+Space：部分輸入法可切換輸入狀態'] },
             'Enter': { name: 'Enter 確認/換行', desc: '送出訊息或換到下一行。', combos: [] },
             'Backspace': { name: 'Backspace 橡皮擦', desc: '刪除游標「左邊」(前面) 的文字。', combos: [] },
             'Escape': { name: 'Esc 逃跑鍵', desc: '取消動作、關閉彈出窗或退出全螢幕遊戲。', combos: [] },
@@ -475,10 +485,10 @@
 
         const bankBuckets = {
             editing: [
-                { t: "打錯字了！我要用哪個「橡皮擦」把左邊的字擦掉？", k: ['Backspace'] },
+                { t: "要刪除游標前一個字，請按哪個「橡皮擦」？", k: ['Backspace'] },
                 { t: "我想把這個訊息「送出」，或是要「換下一行」，要按？", k: ['Enter'] },
                 { t: "鍵盤上「最長」的那個按鍵是誰？", k: ['Space'] },
-                { t: "打字打到一半想變英文，按哪顆鍵最快？", k: ['Shift'] },
+                { t: "按住哪個鍵，再按字母可以輸入大寫？", k: ['Shift'] },
                 { t: "在填表單的時候，按什麼鍵可以跳到「下一個格子」？", k: ['Tab'] },
                 { t: "想要打出的英文字母全部都變成「大寫」，要按哪個鎖定鍵？", k: ['CapsLock'] },
                 { t: "把游標「右邊」的錯字刪掉，要按什麼？", k: ['Delete'] },
@@ -538,10 +548,15 @@
 
         let quizQuestions = [], quizState = { idx: 0, score: 0, lives: 3 }, pressedKeys = new Set(), keyboardScale = 1;
         const floatWin = document.getElementById('floating-window'), dragHandle = document.getElementById('drag-handle');
-        let isDragging = false, startX, startY, hasMoved = false;
+        let isDragging = false, dragPointerId = null, startX, startY, hasMoved = false, questionLocked = false, questionTimer = null;
+        const lockStates = { NumLock: true, CapsLock: false, ScrollLock: false };
+        const pointerKeyTimers = new Map();
 
-        dragHandle.addEventListener('mousedown', (e) => {
+        dragHandle.addEventListener('pointerdown', (e) => {
             if(e.target.tagName === 'BUTTON') return;
+            e.preventDefault();
+            dragHandle.setPointerCapture?.(e.pointerId);
+            dragPointerId = e.pointerId;
             isDragging = true; const rect = floatWin.getBoundingClientRect();
             if (!hasMoved) {
                 floatWin.style.left = rect.left + 'px'; floatWin.style.top = rect.top + 'px';
@@ -549,8 +564,10 @@
             }
             startX = e.clientX - floatWin.offsetLeft; startY = e.clientY - floatWin.offsetTop;
         });
-        document.addEventListener('mousemove', (e) => { if (!isDragging) return; let newX = e.clientX - startX, newY = e.clientY - startY; floatWin.style.left = `${newX}px`; floatWin.style.top = `${newY}px`; });
-        document.addEventListener('mouseup', () => { isDragging = false; });
+        document.addEventListener('pointermove', (e) => { if (!isDragging || e.pointerId !== dragPointerId) return; const maxX = Math.max(0, innerWidth - floatWin.offsetWidth), maxY = Math.max(0, innerHeight - 54); let newX = Math.max(0, Math.min(maxX, e.clientX - startX)), newY = Math.max(0, Math.min(maxY, e.clientY - startY)); floatWin.style.left = `${newX}px`; floatWin.style.top = `${newY}px`; });
+        const finishDrag = (e) => { if (e.pointerId === dragPointerId) { isDragging = false; dragPointerId = null; } };
+        document.addEventListener('pointerup', finishDrag);
+        document.addEventListener('pointercancel', finishDrag);
 
         function toggleMinimize() { floatWin.classList.toggle('minimized'); }
         function zoomKeyboard(delta) { keyboardScale = Math.min(1.4, Math.max(0.5, keyboardScale + delta)); document.getElementById('keyboard-case').style.transform = `scale(${keyboardScale})`; }
@@ -558,6 +575,7 @@
         document.addEventListener('keydown', (e) => {
             if (e.key.length > 1 && !['Enter','Backspace','F12'].includes(e.key) && e.code !== 'Space') e.preventDefault();
             if (e.code === 'Space') e.preventDefault();
+            if (e.repeat) return;
             updateLocks(e); pressedKeys.add(e.code);
             const el = document.getElementById(e.code); if (el) el.classList.add('active');
             currentMode === 'practice' ? showKeyInfo(e.code, e.key) : checkQuiz(e);
@@ -567,14 +585,24 @@
             updateLocks(e);
         });
 
-        function updateLocks(e) { 
-            if (!e) return;
-            isNumLockOn = e.getModifierState("NumLock");
+        function renderLocks() {
+            isNumLockOn = lockStates.NumLock;
             ['NumLock', 'CapsLock', 'ScrollLock'].forEach(lock => { 
                 const el = document.getElementById('led-' + lock.toLowerCase().replace('lock','')); 
-                if (el) e.getModifierState(lock) ? el.classList.add('on') : el.classList.remove('on'); 
+                if (el) lockStates[lock] ? el.classList.add('on') : el.classList.remove('on');
             }); 
         }
+        function updateLocks(e) {
+            if (!e || typeof e.getModifierState !== 'function') return;
+            ['NumLock', 'CapsLock', 'ScrollLock'].forEach(lock => { try { lockStates[lock] = e.getModifierState(lock); } catch (_) {} });
+            renderLocks();
+        }
+        function toggleVirtualLock(code) {
+            const keyToLock = { NumLock: 'NumLock', CapsLock: 'CapsLock', ScrollLock: 'ScrollLock' };
+            const lock = keyToLock[code];
+            if (lock) { lockStates[lock] = !lockStates[lock]; renderLocks(); }
+        }
+        renderLocks();
 
         function setMode(mode) {
             currentMode = mode; document.getElementById('panel-practice').style.display = mode === 'practice' ? 'block' : 'none';
@@ -608,12 +636,13 @@
             document.getElementById('info-combos').innerHTML = k && k.combos && k.combos.length ? k.combos.map(c => `<li>🔹 ${c}</li>`).join('') : "<li>這裡沒有組合技喔</li>";
         }
 
-        function shuffle(arr) { return arr.sort(() => 0.5 - Math.random()); }
+        function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
         function startQuiz() {
             quizQuestions = shuffle([...shuffle([...bankBuckets.editing]).slice(0,4), ...shuffle([...bankBuckets.shortcuts]).slice(0,4), ...shuffle([...bankBuckets.navigation]).slice(0,4), ...shuffle([...bankBuckets.numpad]).slice(0,4), ...shuffle([...bankBuckets.symbols]).slice(0,4)]);
             quizState = { idx: 0, score: 0, lives: 3 }; renderQuiz();
         }
         function renderQuiz() {
+            questionLocked = false;
             if (quizState.idx >= quizQuestions.length) { showResult(); return; }
             const q = quizQuestions[quizState.idx]; document.getElementById('q-idx').innerText = quizState.idx + 1; document.getElementById('q-score').innerText = quizState.score;
             document.getElementById('q-lives').innerText = '❤️'.repeat(quizState.lives); document.getElementById('q-text').innerText = `Q${quizState.idx + 1}. ${q.t}`;
@@ -621,12 +650,15 @@
         }
         
         function skipQuestion() {
+            if (questionLocked) return;
+            questionLocked = true;
             document.getElementById('q-feedback').innerText = "⏩ 跳過這題，加油！";
             document.getElementById('q-feedback').className = "h-10 text-center text-lg font-bold text-gray-500 bg-gray-50 flex items-center justify-center rounded-lg";
-            setTimeout(() => { quizState.idx++; renderQuiz(); }, 1000);
+            questionTimer = setTimeout(() => { quizState.idx++; renderQuiz(); }, 1000);
         }
 
         function checkQuiz(e) {
+            if (questionLocked || quizState.idx >= quizQuestions.length) return;
             const q = quizQuestions[quizState.idx]; let isCorrect = false;
             // 修正判斷邏輯，讓左右按鍵通用
             if (q.k.length > 1) {
@@ -643,26 +675,42 @@
                 else if (t === 'Alt') isCorrect = ['AltLeft','AltRight'].includes(e.code);
                 else isCorrect = e.code === t;
             }
-            if (isCorrect) { quizState.score += 5; document.getElementById('q-feedback').innerText = "⭕ 答對了！好棒！"; document.getElementById('q-feedback').className = "h-10 text-center text-lg font-bold text-green-600 bg-green-50 flex items-center justify-center rounded-lg"; setTimeout(() => { quizState.idx++; renderQuiz(); }, 1000); }
-            else if (q.k.length === 1) handleWrong();
+            if (isCorrect) { quizState.score += 5; questionLocked = true; document.getElementById('q-feedback').innerText = "⭕ 答對了！好棒！"; document.getElementById('q-feedback').className = "h-10 text-center text-lg font-bold text-green-600 bg-green-50 flex items-center justify-center rounded-lg"; questionTimer = setTimeout(() => { quizState.idx++; renderQuiz(); }, 1000); }
+            else handleWrong();
         }
         function handleWrong() {
+            if (questionLocked) return;
             quizState.lives--; document.getElementById('q-feedback').innerText = "❌ 不對喔，再試試看！"; document.getElementById('q-feedback').className = "h-10 text-center text-lg font-bold text-red-500 bg-red-50 flex items-center justify-center rounded-lg";
-            document.getElementById('q-lives').innerText = '❤️'.repeat(quizState.lives); if (quizState.lives <= 0) setTimeout(() => { quizState.idx++; quizState.lives = 3; renderQuiz(); }, 1500);
+            document.getElementById('q-lives').innerText = '❤️'.repeat(quizState.lives); if (quizState.lives <= 0) { questionLocked = true; questionTimer = setTimeout(() => { quizState.idx++; quizState.lives = 3; renderQuiz(); }, 1500); }
         }
         function showResult() {
             document.getElementById('panel-quiz').style.display = 'none'; document.getElementById('panel-result').classList.remove('hidden'); document.getElementById('res-score').innerText = quizState.score;
             const s = quizState.score; document.getElementById('res-comment').innerText = s >= 100 ? "太神啦！你是鍵盤大師！" : s >= 80 ? "優秀！給你拍拍手！" : "及格囉！繼續加油！";
         }
         document.querySelectorAll('.key').forEach(el => {
-            el.addEventListener('mousedown', () => { 
+            el.addEventListener('pointerdown', (event) => {
+                event.preventDefault();
+                el.setPointerCapture?.(event.pointerId);
+                if (pressedKeys.has(el.id)) return;
+                pressedKeys.add(el.id);
+                el.classList.add('active');
+                toggleVirtualLock(el.id);
                 if (currentMode === 'practice') {
-                    showKeyInfo(el.id, el.innerText); document.getElementById(el.id).classList.add('active');
+                    showKeyInfo(el.id, el.innerText);
                 } else {
-                    checkQuiz({ code: el.id }); document.getElementById(el.id).classList.add('active');
+                    checkQuiz({ code: el.id });
                 }
             });
-            el.addEventListener('mouseup', () => { document.getElementById(el.id).classList.remove('active'); });
+            const release = (event) => {
+                if (event && event.pointerType === 'touch' && (el.id === 'ShiftLeft' || el.id === 'ShiftRight' || el.id === 'ControlLeft' || el.id === 'ControlRight' || el.id === 'AltLeft' || el.id === 'AltRight')) {
+                    clearTimeout(pointerKeyTimers.get(el.id));
+                    pointerKeyTimers.set(el.id, setTimeout(() => { pressedKeys.delete(el.id); el.classList.remove('active'); pointerKeyTimers.delete(el.id); }, 900));
+                    return;
+                }
+                pressedKeys.delete(el.id); el.classList.remove('active');
+            };
+            el.addEventListener('pointerup', release);
+            el.addEventListener('pointercancel', () => { pressedKeys.delete(el.id); el.classList.remove('active'); });
         });
     </script>
 </body>
